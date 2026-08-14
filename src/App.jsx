@@ -184,7 +184,9 @@ function HomePage({ navigate }) {
                         <div className="grid items-end gap-10 lg:grid-cols-[1.25fr_.75fr]">
                             <div>
                                 <h1 className="max-w-4xl text-[50px] font-medium leading-[.94] tracking-[-.055em] sm:text-[66px] md:text-[84px] lg:text-[96px]">
-                                    Um momento só seu
+                                    Muito prazer
+                                    <br />
+                                    <span className="font-serif font-normal italic">em boa companhia</span>
                                 </h1>
                                 <p className="mt-7 max-w-lg text-sm leading-6 text-white/75 md:text-[15px]">
                                     Massagens personalizadas em um ambiente reservado, confortável e pensado para transformar pausa em bem-estar.
