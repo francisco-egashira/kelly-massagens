@@ -171,26 +171,16 @@ function HomePage({ navigate }) {
   return (
     <main>
       <section className="mx-auto max-w-[1380px] px-4 pt-4 md:px-8 md:pt-7">
-        <div className="relative overflow-hidden rounded-[26px] bg-[#120807]">
-          {/* Soft fill behind the full photograph. This prevents empty bars without cropping the visible image. */}
+        <div className="relative min-h-[650px] overflow-hidden rounded-[26px] bg-[#1d1712] md:min-h-[720px]">
           <img
-            src="https://unsplash.com/photos/ZOUXvXydHRk/download?force=true&w=2200"
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl"
-          />
-
-          {/* Keep the complete fabric photograph visible instead of cropping it to a fixed-height hero. */}
-          <img
-            src="https://unsplash.com/photos/ZOUXvXydHRk/download?force=true&w=2200"
+            src="/images/burgundy-fabric-hero.jpg"
             alt="Tecido bordô abstrato com luz e sombra"
-            className="pointer-events-none relative block h-auto w-full object-contain opacity-100"
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-100"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-black/5" />
+          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/65 to-transparent" />
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/18 to-black/0" />
-          <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-black/55 to-transparent" />
-
-          <div className="absolute inset-0 z-10 flex flex-col justify-end p-7 pb-11 text-white md:p-14 lg:p-20">
+          <div className="relative z-10 flex min-h-[650px] flex-col justify-end p-7 pb-11 text-white md:min-h-[720px] md:p-14 lg:p-20">
             <div className="mb-9 text-[11px] uppercase tracking-[.22em] text-white/75">Bem-estar • presença • cuidado</div>
             <div className="grid items-end gap-10 lg:grid-cols-[1.25fr_.75fr]">
               <div>
