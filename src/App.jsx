@@ -173,8 +173,8 @@ function HomePage({ navigate }) {
       <section className="mx-auto max-w-[1380px] px-4 pt-4 md:px-8 md:pt-7">
         <div className="relative min-h-[650px] overflow-hidden rounded-[26px] bg-[#1d1712] md:min-h-[720px]">
           <img
-            src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=2200&q=90"
-            alt="Ambiente de massagem"
+            src="https://unsplash.com/photos/ZOUXvXydHRk/download?force=true&w=2200"
+            alt="Tecido bordô abstrato com luz e sombra"
             className="absolute inset-0 h-full w-full object-cover object-center opacity-75"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-black/5" />
