@@ -350,6 +350,22 @@ function ProfessionalCard({ professional }) {
     setPhotoIndex(0);
   }, [professional.name]);
 
+  // Keep the next and previous photos warm in the browser cache so the
+  // carousel feels immediate when the visitor uses the arrows.
+  useEffect(() => {
+    if (photos.length <= 1) return;
+
+    const indexes = new Set([
+      (photoIndex + 1) % photos.length,
+      (photoIndex - 1 + photos.length) % photos.length,
+    ]);
+
+    indexes.forEach((index) => {
+      const image = new Image();
+      image.src = photos[index].url;
+    });
+  }, [photoIndex, photos]);
+
   const previousPhoto = () => {
     if (!photos.length) return;
     setPhotoIndex((current) => (current - 1 + photos.length) % photos.length);
@@ -367,6 +383,8 @@ function ProfessionalCard({ professional }) {
           <img
             src={photos[photoIndex].url}
             alt={`${professional.name} — foto ${photoIndex + 1}`}
+            loading={photoIndex === 0 ? "eager" : "lazy"}
+            decoding="async"
             className="h-full w-full object-cover transition duration-500"
           />
         ) : (
@@ -437,7 +455,19 @@ function ProfessionalsPage({ navigate }) {
         }
 
         if (active) {
-          setProfessionals(data.professionals || []);
+          const loadedProfessionals = data.professionals || [];
+
+          // Start downloading each professional's first photo immediately and
+          // in parallel. The cards can render while the browser fills its cache.
+          loadedProfessionals.forEach((professional) => {
+            const firstPhoto = professional.photos?.[0];
+            if (firstPhoto?.url) {
+              const image = new Image();
+              image.src = firstPhoto.url;
+            }
+          });
+
+          setProfessionals(loadedProfessionals);
           setListDate(data.date || '');
           setError('');
         }

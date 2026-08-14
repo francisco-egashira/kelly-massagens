@@ -49,8 +49,8 @@ export async function GET(request) {
       status: 200,
       headers: {
         'Content-Type': metadata.mimeType,
-        'Cache-Control': 'public, max-age=3600',
-        'Vercel-CDN-Cache-Control': 's-maxage=86400, stale-while-revalidate=604800',
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+        'Vercel-CDN-Cache-Control': 'public, s-maxage=604800, stale-while-revalidate=2592000',
       },
     });
   } catch (error) {
