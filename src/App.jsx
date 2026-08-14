@@ -171,16 +171,18 @@ function HomePage({ navigate }) {
   return (
     <main>
       <section className="mx-auto max-w-[1380px] px-4 pt-4 md:px-8 md:pt-7">
-        <div className="relative min-h-[650px] overflow-hidden rounded-[26px] bg-[#1d1712] md:min-h-[720px]">
+        <div className="relative min-h-[650px] overflow-hidden rounded-[26px] bg-[#120908] md:min-h-0">
+          {/* On desktop the image keeps its natural aspect ratio, preserving the fabric folds.
+              Mobile keeps a taller crop so the hero copy still has enough room. */}
           <img
             src="https://unsplash.com/photos/ZOUXvXydHRk/download?force=true&w=2200"
             alt="Tecido bordô abstrato com luz e sombra"
-            className="absolute inset-0 h-full w-full object-cover object-center opacity-75"
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-90 md:relative md:block md:h-auto md:w-full md:object-contain"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-black/5" />
-          <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/65 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-black/5" />
+          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/50 to-transparent" />
 
-          <div className="relative z-10 flex min-h-[650px] flex-col justify-end p-7 pb-11 text-white md:min-h-[720px] md:p-14 lg:p-20">
+          <div className="absolute inset-0 z-10 flex min-h-[650px] flex-col justify-end p-7 pb-11 text-white md:min-h-0 md:p-14 lg:p-20">
             <div className="mb-9 text-[11px] uppercase tracking-[.22em] text-white/75">Bem-estar • presença • cuidado</div>
             <div className="grid items-end gap-10 lg:grid-cols-[1.25fr_.75fr]">
               <div>
