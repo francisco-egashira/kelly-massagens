@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/sobre", "destination": "/index.html" },
+    { "source": "/servicos", "destination": "/index.html" },
+    { "source": "/valores", "destination": "/index.html" },
+    { "source": "/profissionais", "destination": "/index.html" },
+    { "source": "/contato", "destination": "/index.html" }
+  ]
+}
