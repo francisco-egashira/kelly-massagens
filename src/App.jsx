@@ -278,7 +278,7 @@ export default function App() {
                     </div>
                 </section>
 
-            </footer>
+            </main>
         </div>
     );
 }

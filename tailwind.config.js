@@ -7,14 +7,20 @@ export default {
     theme: {
         extend: {
             colors: {
-                sage: {
-                    50: '#f4f7f5',
-                    100: '#e6ede9',
-                    600: '#607d6b',
-                    700: '#4d6456',
+                luxury: {
+                    gold: '#c5a880',    // Soft elegant champagne gold
+                    goldDark: '#b2936a',
+                    dark: '#1a1816',    // Deep premium background option
+                    cream: '#faf8f5',   // Serene warm white canvas
+                    stone: '#7c756d'    // Muted luxury body text
                 }
+            },
+            fontFamily: {
+                serif: ['Playfair Display', 'Georgia', 'serif'],
+                sans: ['Inter', 'sans-serif'],
             }
         },
     },
     plugins: [],
 }
+
