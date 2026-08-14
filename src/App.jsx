@@ -386,14 +386,14 @@ function ProfessionalCard({ professional }) {
               src={photos[photoIndex].url}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
+              className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
             />
             <img
               src={photos[photoIndex].url}
               alt={`${professional.name} — foto ${photoIndex + 1}`}
               loading={photoIndex === 0 ? "eager" : "lazy"}
               decoding="async"
-              className="relative z-10 h-full w-full object-contain transition duration-500"
+              className="pointer-events-none relative z-10 h-full w-full object-contain transition duration-500"
             />
           </>
         ) : (
@@ -408,7 +408,7 @@ function ProfessionalCard({ professional }) {
               type="button"
               onClick={previousPhoto}
               aria-label={`Foto anterior de ${professional.name}`}
-              className="absolute left-4 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-[#faf6ef]/90 text-[#211d18] shadow-sm backdrop-blur transition hover:bg-white"
+              className="absolute left-4 top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-[#faf6ef]/95 text-[#211d18] shadow-md backdrop-blur transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d96846]"
             >
               <ChevronLeft size={18} />
             </button>
@@ -416,11 +416,11 @@ function ProfessionalCard({ professional }) {
               type="button"
               onClick={nextPhoto}
               aria-label={`Próxima foto de ${professional.name}`}
-              className="absolute right-4 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-[#faf6ef]/90 text-[#211d18] shadow-sm backdrop-blur transition hover:bg-white"
+              className="absolute right-4 top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-[#faf6ef]/95 text-[#211d18] shadow-md backdrop-blur transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d96846]"
             >
               <ChevronRight size={18} />
             </button>
-            <div className="absolute bottom-4 right-4 rounded-full bg-black/45 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur">
+            <div className="pointer-events-none absolute bottom-4 right-4 z-30 rounded-full bg-black/50 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur">
               {photoIndex + 1} / {photos.length}
             </div>
           </>
