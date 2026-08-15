@@ -379,6 +379,10 @@ function ProfessionalCard({ professional }) {
 
   return (
     <article className="overflow-hidden rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3]">
+      <div className="px-7 py-5">
+        <h2 className="font-serif text-2xl">{professional.name}</h2>
+      </div>
+
       <div className="group relative aspect-[4/5] overflow-hidden bg-[#e9e0d5]">
         {photos.length ? (
           <>
@@ -428,9 +432,8 @@ function ProfessionalCard({ professional }) {
         )}
       </div>
 
-      <div className="p-7">
-        <h2 className="font-serif text-2xl">{professional.name}</h2>
-        <div className="mt-5 border-t border-[#e0d7cd] pt-5 text-xs text-[#625a52]">
+      <div className="px-7 py-5">
+        <div className="text-xs text-[#625a52]">
           Disponível hoje
         </div>
       </div>
