@@ -54,8 +54,65 @@ const navItems = [
   { label: 'Serviços', path: '/servicos' },
   { label: 'Valores', path: '/valores' },
   { label: 'Profissionais', path: '/profissionais' },
+  { label: 'Oportunidades', path: '/oportunidades' },
   { label: 'Contato', path: '/contato' },
 ];
+
+const DEFAULT_SITE_SETTINGS = {
+  priceOneHour: 'R$ 200',
+  priceThirtyMinutes: 'R$ 160',
+  whatsapp: '(11) 95282-8169',
+  telephone: '(11) 2478-9218',
+  weekdayHours: '12:00 às 20:00',
+  saturdayHours: '12:00 às 18:00',
+  sundayHours: 'Fechado',
+  addressLine1: 'Rua Serra de Juréa, 442 - Tatuapé',
+  addressLine2: 'São Paulo - SP',
+  opportunitiesWhatsapp: '(11) 95282-8169',
+};
+
+function normalizePhone(value = '') {
+  return value.replace(/\D/g, '');
+}
+
+function whatsappHref(value, message = 'Olá, gostaria de consultar disponibilidade') {
+  const digits = normalizePhone(value);
+  const international = digits.startsWith('55') ? digits : `55${digits}`;
+  return `https://wa.me/${international}?text=${encodeURIComponent(message)}`;
+}
+
+function telephoneHref(value) {
+  const digits = normalizePhone(value);
+  const international = digits.startsWith('55') ? digits : `55${digits}`;
+  return `tel:+${international}`;
+}
+
+function useSiteContent() {
+  const [settings, setSettings] = useState(DEFAULT_SITE_SETTINGS);
+  const [promotions, setPromotions] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSiteContent() {
+      try {
+        const response = await fetch('/api/site-content');
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!active) return;
+        setSettings({ ...DEFAULT_SITE_SETTINGS, ...(data.settings || {}) });
+        setPromotions(Array.isArray(data.promotions) ? data.promotions : []);
+      } catch {
+        // Keep the safe fallback values when Sanity is unavailable.
+      }
+    }
+
+    loadSiteContent();
+    return () => { active = false; };
+  }, []);
+
+  return { settings, promotions };
+}
 
 function usePath() {
   const [path, setPath] = useState(window.location.pathname || '/');
@@ -121,14 +178,13 @@ function Header({ path, navigate }) {
           </nav>
 
           <div className="flex items-center gap-3">
-            <a
-              href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20consultar%20disponibilidade"
-              target="_blank"
-              rel="noreferrer"
+            <SiteLink
+              to="/contato"
+              navigate={navigate}
               className="hidden items-center gap-2 rounded-full border border-[#2d2823] px-5 py-3 text-[11px] font-semibold transition hover:bg-[#211d18] hover:text-white sm:inline-flex"
             >
               Agendar horário <ArrowRight size={13} />
-            </a>
+            </SiteLink>
             <button
               type="button"
               onClick={() => setOpen((value) => !value)}
@@ -166,7 +222,7 @@ function Header({ path, navigate }) {
   );
 }
 
-function HomePage({ navigate }) {
+function HomePage({ navigate, siteSettings }) {
   return (
     <main>
       <section className="mx-auto max-w-[1380px] px-4 pt-4 md:px-8 md:pt-7">
@@ -216,7 +272,7 @@ function HomePage({ navigate }) {
             <h2 className="mt-5 max-w-md font-serif text-4xl leading-[1.05] md:text-5xl">Uma pausa criada para você.</h2>
           </div>
           <p className="max-w-xl justify-self-start text-sm leading-7 text-[#71685f] md:justify-self-end">
-            Um espaço de cuidado corporal com atendimento individual, técnicas selecionadas e uma atmosfera discreta. Na página inicial você encontra apenas o essencial — os detalhes ficam organizados nas páginas do menu.
+            Um espaço de cuidado corporal com atendimento individual, técnicas selecionadas e uma atmosfera discreta.
           </p>
         </div>
 
@@ -254,7 +310,7 @@ function HomePage({ navigate }) {
         </div>
       </section>
 
-      <Cta navigate={navigate} />
+      <ContactSection settings={siteSettings} showHeading />
     </main>
   );
 }
@@ -276,14 +332,14 @@ function AboutPage({ navigate }) {
     <main>
       <PageIntro eyebrow="Sobre nós" title="Um espaço feito para desacelerar." text="Atendimento individual, atmosfera reservada e atenção ao conforto em cada detalhe da experiência." />
       <section className="mx-auto grid max-w-[1240px] gap-10 px-6 pb-24 lg:grid-cols-[1.1fr_.9fr] lg:items-center md:pb-32">
-        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1500&q=85" alt="Ambiente do espaço" className="aspect-[4/3] w-full rounded-[24px] object-cover" />
+        <img src="/images/burgundy-fabric-hero.jpg" alt="Tecido bordô abstrato do espaço Kelly Massagens" className="aspect-[4/3] w-full rounded-[24px] object-cover" />
         <div className="lg:pl-8">
           <div className="font-serif text-7xl text-[#b86a3a]">6+</div>
           <p className="mt-2 text-xs uppercase tracking-[.16em] text-[#8a8076]">anos de experiência</p>
-          <h2 className="mt-9 font-serif text-3xl leading-tight">Cuidado técnico com uma experiência acolhedora.</h2>
-          <p className="mt-5 text-sm leading-7 text-[#71685f]">Nosso trabalho parte da escuta e da individualidade. Cada sessão considera seu momento, suas preferências e o tipo de relaxamento que você procura.</p>
+          <h2 className="mt-9 font-serif text-3xl leading-tight">Atendimento personalizado com uma experiência acolhedora.</h2>
+          <p className="mt-5 text-sm leading-7 text-[#71685f]">Você será recebido pela anfitriã Kelly que irá indicar o melhor atendimento de acordo com suas preferências.</p>
           <p className="mt-4 text-sm leading-7 text-[#71685f]">O espaço foi pensado para preservar privacidade e criar uma transição real entre a rotina e o momento de cuidado.</p>
-          <SiteLink to="/contato" navigate={navigate} className="mt-8 inline-flex items-center gap-2 rounded-full border border-[#2d2823] px-5 py-3 text-xs font-semibold">Falar conosco <ArrowRight size={14} /></SiteLink>
+          <SiteLink to="/contato" navigate={navigate} className="mt-8 inline-flex items-center gap-2 rounded-full border border-[#2d2823] px-5 py-3 text-xs font-semibold">Agendar horário <ArrowRight size={14} /></SiteLink>
         </div>
       </section>
       <Cta navigate={navigate} />
@@ -304,7 +360,6 @@ function ServicesPage({ navigate }) {
               <p className="mt-5 max-w-lg text-sm leading-7 text-[#71685f]">{service.desc}</p>
               <div className="mt-7 flex gap-3 text-[11px]">
                 <span className="rounded-full border border-[#cfc5b9] px-4 py-2">{service.duration}</span>
-                <span className="rounded-full border border-[#cfc5b9] px-4 py-2">{service.price}</span>
               </div>
               <SiteLink to="/contato" navigate={navigate} className="mt-8 inline-flex items-center gap-2 text-xs font-semibold">Agendar experiência <ArrowRight size={14} /></SiteLink>
             </div>
@@ -317,25 +372,55 @@ function ServicesPage({ navigate }) {
   );
 }
 
-function PricingPage({ navigate }) {
+function PricingPage({ navigate, siteSettings, promotions }) {
+  const priceRows = [
+    { id: '01', title: 'Massagem completa', duration: '1 hora', price: siteSettings.priceOneHour },
+    { id: '02', title: 'Massagem completa', duration: '30 minutos', price: siteSettings.priceThirtyMinutes },
+  ];
+
   return (
     <main>
-      <PageIntro eyebrow="Valores" title="Sessões e investimentos." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu cuidado." />
+      <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." />
       <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
+        {promotions.length > 0 && (
+          <div className="mb-12">
+            <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {promotions.map((promotion) => (
+                <article key={promotion._id} className="rounded-[22px] border border-[#d5cbbf] bg-[#fffaf3] p-7 md:p-8">
+                  <h2 className="font-serif text-2xl leading-tight">{promotion.title}</h2>
+                  <p className="mt-4 text-sm leading-6 text-[#71685f]">{promotion.description}</p>
+                  {promotion.price && <div className="mt-7 font-serif text-3xl text-[#b86a3a]">{promotion.price}</div>}
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
-          {services.map((service, index) => (
-            <div key={service.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
-              <span className="font-serif text-3xl text-[#b86a3a]">{service.id}</span>
+          {priceRows.map((item, index) => (
+            <div key={item.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
+              <span className="font-serif text-3xl text-[#b86a3a]">{item.id}</span>
               <div>
-                <h2 className="font-serif text-xl md:text-2xl">{service.title}</h2>
-                <p className="mt-1 text-xs text-[#7d746b]">{service.duration} de sessão</p>
+                <h2 className="font-serif text-xl md:text-2xl">{item.title}</h2>
+                <p className="mt-1 text-xs text-[#7d746b]">{item.duration}</p>
               </div>
-              <div className="font-serif text-2xl md:text-3xl">{service.price}</div>
+              <div className="font-serif text-2xl md:text-3xl">{item.price}</div>
             </div>
           ))}
         </div>
+
+        <div className="mt-8 rounded-[22px] border border-[#d5cbbf] bg-[#faf6ef] p-7 md:p-8">
+          <span className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#b95e2d]">Formas de pagamento</span>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            {['Dinheiro', 'Cartão', 'PIX'].map((method) => (
+              <span key={method} className="rounded-full border border-[#cfc5b9] px-4 py-2">{method}</span>
+            ))}
+          </div>
+        </div>
+
         <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl bg-[#26211c] p-7 text-white md:flex-row md:items-center">
-          <p className="max-w-xl text-sm leading-6 text-white/70">Para confirmar disponibilidade, horários e detalhes do atendimento, fale diretamente pelo WhatsApp.</p>
+          <p className="max-w-xl text-sm leading-6 text-white/70">Para confirmar disponibilidade, horários e detalhes do atendimento, fale diretamente conosco.</p>
           <SiteLink to="/contato" navigate={navigate} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-3 text-xs font-semibold text-[#211d18]">Ir para contato <ArrowRight size={14} /></SiteLink>
         </div>
       </section>
@@ -542,22 +627,89 @@ function ProfessionalsPage({ navigate }) {
   );
 }
 
-function ContactPage() {
+function ContactSection({ settings, showHeading = false }) {
+  const fullAddress = `${settings.addressLine1}, ${settings.addressLine2}`;
+  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`;
+
   return (
-    <main>
-      <PageIntro eyebrow="Contato" title="Vamos encontrar o melhor horário." text="Atendemos com hora marcada para preservar a qualidade, a privacidade e o tempo dedicado a cada sessão." />
-      <section className="mx-auto grid max-w-[1240px] gap-8 px-6 pb-24 lg:grid-cols-[.8fr_1.2fr] md:pb-32">
+    <section className="mx-auto max-w-[1240px] px-6 pb-24 md:pb-32">
+      {showHeading && (
+        <div className="mb-10 border-t border-[#d7cec2] pt-16 md:pt-20">
+          <span className="text-[10px] font-semibold uppercase tracking-[.24em] text-[#b95e2d]">Contato</span>
+          <h2 className="mt-5 max-w-2xl font-serif text-4xl leading-tight md:text-5xl">Vamos encontrar o melhor horário.</h2>
+        </div>
+      )}
+      <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
         <div className="rounded-[24px] bg-[#24201b] p-8 text-white md:p-10">
           <h2 className="font-serif text-3xl">Fale com a gente</h2>
           <div className="mt-9 space-y-7 text-sm">
-            <div className="flex gap-4"><Phone className="mt-0.5 text-[#df9464]" size={19} /><div><p className="text-xs uppercase tracking-[.15em] text-white/45">WhatsApp</p><p className="mt-1">(11) 99999-9999</p></div></div>
-            <div className="flex gap-4"><Clock className="mt-0.5 text-[#df9464]" size={19} /><div><p className="text-xs uppercase tracking-[.15em] text-white/45">Horários</p><p className="mt-1">Segunda a sábado · 09:00 às 21:00</p></div></div>
-            <div className="flex gap-4"><MapPin className="mt-0.5 text-[#df9464]" size={19} /><div><p className="text-xs uppercase tracking-[.15em] text-white/45">Localização</p><p className="mt-1">Bela Vista · São Paulo, SP</p></div></div>
+            <div className="flex gap-4">
+              <Phone className="mt-0.5 text-[#df9464]" size={19} />
+              <div>
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">WhatsApp</p>
+                <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noreferrer" className="mt-1 block hover:text-[#df9464]">{settings.whatsapp}</a>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <Phone className="mt-0.5 text-[#df9464]" size={19} />
+              <div>
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">Telefone</p>
+                <a href={telephoneHref(settings.telephone)} className="mt-1 block hover:text-[#df9464]">{settings.telephone}</a>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <Clock className="mt-0.5 text-[#df9464]" size={19} />
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">Horários</p>
+                <p>Segunda a sexta · {settings.weekdayHours}</p>
+                <p>Sábado · {settings.saturdayHours}</p>
+                <p>Domingo · {settings.sundayHours}</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <MapPin className="mt-0.5 text-[#df9464]" size={19} />
+              <div>
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">Localização</p>
+                <p className="mt-1 leading-6">{settings.addressLine1}<br />{settings.addressLine2}</p>
+              </div>
+            </div>
           </div>
-          <a href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20consultar%20disponibilidade" target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#f7f1e8] px-6 py-3.5 text-xs font-semibold text-[#211d18]">Chamar no WhatsApp <ArrowRight size={14} /></a>
+          <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#f7f1e8] px-6 py-3.5 text-xs font-semibold text-[#211d18]">Chamar no WhatsApp <ArrowRight size={14} /></a>
         </div>
         <div className="min-h-[430px] overflow-hidden rounded-[24px] border border-[#d8cfc4] bg-[#eee7dd]">
-          <iframe title="Google Maps" src="https://www.google.com/maps?q=Av.%20Paulista,%20São%20Paulo&output=embed" className="h-full min-h-[430px] w-full border-0 grayscale-[30%]" loading="lazy" />
+          <iframe title="Google Maps" src={mapUrl} className="h-full min-h-[430px] w-full border-0 grayscale-[30%]" loading="lazy" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContactPage({ siteSettings }) {
+  return (
+    <main>
+      <PageIntro eyebrow="Contato" title="Vamos encontrar o melhor horário." text="Atendemos com hora marcada para preservar a qualidade, a privacidade e o tempo dedicado a cada sessão." />
+      <ContactSection settings={siteSettings} />
+    </main>
+  );
+}
+
+function OpportunitiesPage({ siteSettings }) {
+  return (
+    <main>
+      <PageIntro eyebrow="Oportunidades" title="Trabalhe conosco." text="Quer fazer parte da nossa equipe? Entre em contato e converse com a gente." />
+      <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
+        <div className="rounded-[26px] bg-[#24201b] p-8 text-white md:p-12 lg:p-14">
+          <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#df9464]">Trabalhe Conosco</span>
+          <h2 className="mt-6 max-w-xl font-serif text-4xl leading-tight md:text-5xl">Quer fazer parte da nossa equipe?</h2>
+          <p className="mt-5 text-sm text-white/65">Nos chame no WhatsApp.</p>
+          <a
+            href={whatsappHref(siteSettings.opportunitiesWhatsapp, 'Olá, gostaria de saber mais sobre oportunidades na Kelly Massagens')}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-9 inline-flex items-center gap-3 rounded-full bg-[#faf6ef] px-6 py-4 text-xs font-semibold text-[#211d18] transition hover:bg-white"
+          >
+            {siteSettings.opportunitiesWhatsapp} <ArrowRight size={15} />
+          </a>
         </div>
       </section>
     </main>
@@ -572,7 +724,7 @@ function Cta({ navigate }) {
           <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#b95e2d]">Agendamento</span>
           <h2 className="mt-4 max-w-2xl font-serif text-3xl leading-tight md:text-4xl">Escolha seu momento. A gente cuida do restante.</h2>
         </div>
-        <SiteLink to="/contato" navigate={navigate} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#211d18] px-6 py-4 text-xs font-semibold text-white">Consultar disponibilidade <ArrowRight size={14} /></SiteLink>
+        <SiteLink to="/contato" navigate={navigate} className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#211d18] px-6 py-4 text-xs font-semibold text-white">Agendar horário <ArrowRight size={14} /></SiteLink>
       </div>
     </section>
   );
@@ -589,6 +741,7 @@ function Footer({ navigate }) {
         <div className="flex flex-wrap gap-x-5 gap-y-3 text-xs text-white/55">
           <SiteLink to="/servicos" navigate={navigate}>Serviços</SiteLink>
           <SiteLink to="/valores" navigate={navigate}>Valores</SiteLink>
+          <SiteLink to="/oportunidades" navigate={navigate}>Oportunidades</SiteLink>
           <SiteLink to="/contato" navigate={navigate}>Contato</SiteLink>
           <a href="#" aria-label="Instagram"><Instagram size={16} /></a>
         </div>
@@ -599,15 +752,17 @@ function Footer({ navigate }) {
 
 export default function App() {
   const [path, navigate] = usePath();
+  const { settings: siteSettings, promotions } = useSiteContent();
 
   const page = (() => {
     switch (path) {
       case '/sobre': return <AboutPage navigate={navigate} />;
       case '/servicos': return <ServicesPage navigate={navigate} />;
-      case '/valores': return <PricingPage navigate={navigate} />;
+      case '/valores': return <PricingPage navigate={navigate} siteSettings={siteSettings} promotions={promotions} />;
       case '/profissionais': return <ProfessionalsPage navigate={navigate} />;
-      case '/contato': return <ContactPage />;
-      default: return <HomePage navigate={navigate} />;
+      case '/oportunidades': return <OpportunitiesPage siteSettings={siteSettings} />;
+      case '/contato': return <ContactPage siteSettings={siteSettings} />;
+      default: return <HomePage navigate={navigate} siteSettings={siteSettings} />;
     }
   })();
 

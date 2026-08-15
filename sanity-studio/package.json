@@ -1,0 +1,16 @@
+{
+  "name": "kelly-massagens-sanity-studio",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sanity": "latest",
+    "styled-components": "^6.1.0"
+  }
+}
