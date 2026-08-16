@@ -293,9 +293,9 @@ function HomePage({ navigate, siteSettings }) {
   );
 }
 
-function PageIntro({ eyebrow, title, text, compactBottom = false }) {
+function PageIntro({ eyebrow, title, text, compactBottom = false, compactTop = false }) {
   return (
-    <section className={`mx-auto max-w-[1240px] px-6 pt-16 md:pt-24 ${compactBottom ? 'pb-7 md:pb-20' : 'pb-14 md:pb-20'}`}>
+    <section className={`mx-auto max-w-[1240px] px-6 ${compactTop ? 'pt-8 md:pt-24' : 'pt-16 md:pt-24'} ${compactBottom ? 'pb-7 md:pb-20' : 'pb-14 md:pb-20'}`}>
       <span className="text-[10px] font-semibold uppercase tracking-[.24em] text-[#b95e2d]">{eyebrow}</span>
       <div className="mt-6 grid gap-8 md:grid-cols-[1fr_.65fr] md:items-end">
         <h1 className="max-w-3xl font-serif text-5xl leading-[1.02] tracking-[-.035em] md:text-7xl">{title}</h1>
@@ -352,7 +352,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
           </button>
         </div>
       )}
-      <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." compactBottom />
+      <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." compactBottom compactTop={promotions.length > 0} />
       <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
         <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
           {priceRows.map((item, index) => (
@@ -368,7 +368,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
         </div>
 
         {promotions.length > 0 && (
-          <div id="promocoes-ativas" className="mb-12 mt-7 scroll-mt-28 md:mt-14">
+          <div id="promocoes-ativas" className="mb-12 mt-4 scroll-mt-28 md:mt-14">
             <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {promotions.map((promotion) => (
