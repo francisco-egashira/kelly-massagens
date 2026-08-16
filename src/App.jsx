@@ -50,7 +50,6 @@ const services = [
 
 const navItems = [
   { label: 'Início', path: '/' },
-  { label: 'Sobre', path: '/sobre' },
   { label: 'Serviços', path: '/servicos' },
   { label: 'Valores', path: '/valores' },
   { label: 'Profissionais', path: '/profissionais' },
@@ -292,24 +291,6 @@ function HomePage({ navigate, siteSettings }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1240px] px-6 pb-24 md:pb-32">
-        <div className="grid overflow-hidden rounded-[26px] bg-[#27231f] text-white lg:grid-cols-2">
-          <img
-            src="https://images.unsplash.com/photo-1600334129128-685c5582fd35?auto=format&fit=crop&w=1400&q=85"
-            alt="Detalhe de uma sessão de massagem"
-            className="h-full min-h-[430px] w-full object-cover"
-          />
-          <div className="flex flex-col justify-center p-9 md:p-14 lg:p-16">
-            <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#d99667]">Sobre o espaço</span>
-            <h2 className="mt-6 max-w-md font-serif text-4xl leading-tight">Privacidade, conforto e atenção aos detalhes.</h2>
-            <p className="mt-6 max-w-lg text-sm leading-7 text-white/65">Cada atendimento é preparado individualmente para que você encontre um ambiente tranquilo, acolhedor e sem pressa.</p>
-            <SiteLink to="/sobre" navigate={navigate} className="mt-9 inline-flex w-fit items-center gap-2 rounded-full border border-white/35 px-5 py-3 text-xs font-medium transition hover:bg-white hover:text-[#211d18]">
-              Conhecer o espaço <ArrowRight size={14} />
-            </SiteLink>
-          </div>
-        </div>
-      </section>
-
       <ContactSection settings={siteSettings} showHeading />
     </main>
   );
@@ -327,45 +308,28 @@ function PageIntro({ eyebrow, title, text }) {
   );
 }
 
-function AboutPage({ navigate }) {
+function ServicesPage({ navigate }) {
   return (
     <main>
-      <PageIntro eyebrow="Sobre nós" title="Um espaço feito para desacelerar." text="Atendimento individual, atmosfera reservada e atenção ao conforto em cada detalhe da experiência." />
+      <PageIntro
+        eyebrow="Serviços"
+        title="Um espaço dedicado ao prazer"
+        text="Atendimento individual, atmosfera reservada e atenção ao conforto em cada detalhe da experiência."
+      />
       <section className="mx-auto grid max-w-[1240px] gap-10 px-6 pb-24 lg:grid-cols-[1.1fr_.9fr] lg:items-center md:pb-32">
-        <img src="/images/burgundy-fabric-hero.jpg" alt="Tecido bordô abstrato do espaço Kelly Massagens" className="aspect-[4/3] w-full rounded-[24px] object-cover" />
+        <img
+          src="/images/burgundy-fabric-hero.jpg"
+          alt="Tecido bordô abstrato do espaço Kelly Massagens"
+          className="aspect-[4/3] w-full rounded-[24px] object-cover"
+        />
         <div className="lg:pl-8">
           <div className="font-serif text-7xl text-[#b86a3a]">6+</div>
           <p className="mt-2 text-xs uppercase tracking-[.16em] text-[#8a8076]">anos de experiência</p>
           <h2 className="mt-9 font-serif text-3xl leading-tight">Atendimento personalizado com uma experiência acolhedora.</h2>
           <p className="mt-5 text-sm leading-7 text-[#71685f]">Você será recebido pela anfitriã Kelly que irá indicar o melhor atendimento de acordo com suas preferências.</p>
-          <p className="mt-4 text-sm leading-7 text-[#71685f]">O espaço foi pensado para preservar privacidade e criar uma transição real entre a rotina e o momento de cuidado.</p>
+          <p className="mt-4 text-sm leading-7 text-[#71685f]">Aqui toda atenção é voltada ao cliente e nossa prioridade é a sua satisfação.</p>
           <SiteLink to="/contato" navigate={navigate} className="mt-8 inline-flex items-center gap-2 rounded-full border border-[#2d2823] px-5 py-3 text-xs font-semibold">Agendar horário <ArrowRight size={14} /></SiteLink>
         </div>
-      </section>
-      <Cta navigate={navigate} />
-    </main>
-  );
-}
-
-function ServicesPage({ navigate }) {
-  return (
-    <main>
-      <PageIntro eyebrow="Serviços" title="Experiências para diferentes momentos." text="Conheça cada sessão com calma. Duração e valores também estão disponíveis na página Valores." />
-      <section className="mx-auto max-w-[1240px] space-y-20 px-6 pb-24 md:space-y-28 md:pb-32">
-        {services.map((service, index) => (
-          <article key={service.id} className="grid items-center gap-9 border-t border-[#d7cec2] pt-10 lg:grid-cols-2 lg:gap-16">
-            <div className={index % 2 ? 'lg:order-2' : ''}>
-              <div className="font-serif text-6xl font-light text-[#b86a3a]">{service.id}</div>
-              <h2 className="mt-6 max-w-lg font-serif text-3xl leading-tight md:text-4xl">{service.title}</h2>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-[#71685f]">{service.desc}</p>
-              <div className="mt-7 flex gap-3 text-[11px]">
-                <span className="rounded-full border border-[#cfc5b9] px-4 py-2">{service.duration}</span>
-              </div>
-              <SiteLink to="/contato" navigate={navigate} className="mt-8 inline-flex items-center gap-2 text-xs font-semibold">Agendar experiência <ArrowRight size={14} /></SiteLink>
-            </div>
-            <img src={service.image} alt={service.title} className={`aspect-[4/3] w-full rounded-[22px] object-cover ${index % 2 ? 'lg:order-1' : ''}`} />
-          </article>
-        ))}
       </section>
       <Cta navigate={navigate} />
     </main>
@@ -382,6 +346,19 @@ function PricingPage({ navigate, siteSettings, promotions }) {
     <main>
       <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." />
       <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
+        <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
+          {priceRows.map((item, index) => (
+            <div key={item.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
+              <span className="font-serif text-3xl text-[#b86a3a]">{item.id}</span>
+              <div>
+                <h2 className="font-serif text-xl md:text-2xl">{item.title}</h2>
+                <p className="mt-1.5 text-sm font-medium text-[#71685f] md:text-base">{item.duration}</p>
+              </div>
+              <div className="font-serif text-2xl md:text-3xl">{item.price}</div>
+            </div>
+          ))}
+        </div>
+
         {promotions.length > 0 && (
           <div className="mb-12">
             <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
@@ -396,19 +373,6 @@ function PricingPage({ navigate, siteSettings, promotions }) {
             </div>
           </div>
         )}
-
-        <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
-          {priceRows.map((item, index) => (
-            <div key={item.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
-              <span className="font-serif text-3xl text-[#b86a3a]">{item.id}</span>
-              <div>
-                <h2 className="font-serif text-xl md:text-2xl">{item.title}</h2>
-                <p className="mt-1.5 text-sm font-medium text-[#71685f] md:text-base">{item.duration}</p>
-              </div>
-              <div className="font-serif text-2xl md:text-3xl">{item.price}</div>
-            </div>
-          ))}
-        </div>
 
         <div className="mt-8 rounded-[22px] border border-[#d5cbbf] bg-[#faf6ef] p-7 md:p-8">
           <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Formas de pagamento</span>
@@ -601,19 +565,6 @@ function ProfessionalsPage({ navigate }) {
           </div>
         )}
 
-        {!loading && error && (
-          <div className="rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3] px-8 py-12">
-            <h2 className="font-serif text-2xl">Não foi possível carregar a equipe de hoje.</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#71685f]">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && professionals.length === 0 && (
-          <div className="rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3] px-8 py-16 text-center text-sm text-[#71685f]">
-            Nenhuma profissional foi encontrada na lista de hoje.
-          </div>
-        )}
-
         {!loading && !error && professionals.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {professionals.map((professional) => (
@@ -636,7 +587,7 @@ function ContactSection({ settings, showHeading = false }) {
       {showHeading && (
         <div className="mb-10 border-t border-[#d7cec2] pt-16 md:pt-20">
           <span className="text-[10px] font-semibold uppercase tracking-[.24em] text-[#b95e2d]">Contato</span>
-          <h2 className="mt-5 max-w-2xl font-serif text-4xl leading-tight md:text-5xl">Vamos encontrar o melhor horário.</h2>
+          <h2 className="mt-5 max-w-2xl font-serif text-4xl leading-tight md:text-5xl">Reserve seu horário</h2>
         </div>
       )}
       <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
@@ -687,7 +638,7 @@ function ContactSection({ settings, showHeading = false }) {
 function ContactPage({ siteSettings }) {
   return (
     <main>
-      <PageIntro eyebrow="Contato" title="Vamos encontrar o melhor horário." text="Atendemos com hora marcada para preservar a qualidade, a privacidade e o tempo dedicado a cada sessão." />
+      <PageIntro eyebrow="Contato" title="Reserve seu horário" text="Nossa prioridade é a sua satisfação" />
       <ContactSection settings={siteSettings} />
     </main>
   );
@@ -756,7 +707,7 @@ export default function App() {
 
   const page = (() => {
     switch (path) {
-      case '/sobre': return <AboutPage navigate={navigate} />;
+      case '/sobre': return <ServicesPage navigate={navigate} />;
       case '/servicos': return <ServicesPage navigate={navigate} />;
       case '/valores': return <PricingPage navigate={navigate} siteSettings={siteSettings} promotions={promotions} />;
       case '/profissionais': return <ProfessionalsPage navigate={navigate} />;
