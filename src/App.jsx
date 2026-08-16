@@ -215,7 +215,7 @@ function Header({ path, navigate }) {
       </header>
 
       <div className="bg-[#e95d19] px-4 py-2.5 text-center text-[11px] font-medium tracking-[.01em] text-white">
-        <span className="inline-flex items-center gap-2"><CalendarDays size={13} /> Atendimento com hora marcada • consulte disponibilidade pelo WhatsApp</span>
+        <span className="inline-flex items-center gap-2"><CalendarDays size={13} /> Garanta seu horário • consulte disponibilidade pelo telefone</span>
       </div>
     </>
   );
@@ -265,14 +265,11 @@ function HomePage({ navigate, siteSettings }) {
       </section>
 
       <section className="mx-auto max-w-[1240px] px-6 py-20 md:py-28">
-        <div className="grid gap-10 border-b border-[#d7cec2] pb-16 md:grid-cols-[.8fr_1.2fr] md:items-end">
+        <div className="border-b border-[#d7cec2] pb-16">
           <div>
             <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#b95e2d]">Kelly Massagens</span>
             <h2 className="mt-5 max-w-md font-serif text-4xl leading-[1.05] md:text-5xl">Uma pausa criada para você.</h2>
           </div>
-          <p className="max-w-xl justify-self-start text-sm leading-7 text-[#71685f] md:justify-self-end">
-            Um espaço de cuidado corporal com atendimento individual, técnicas selecionadas e uma atmosfera discreta.
-          </p>
         </div>
 
         <div className="grid gap-px overflow-hidden rounded-2xl border border-[#d7cec2] bg-[#d7cec2] md:grid-cols-3">
@@ -360,7 +357,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
         </div>
 
         {promotions.length > 0 && (
-          <div className="mb-12">
+          <div className="mb-12 mt-12 md:mt-14">
             <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {promotions.map((promotion) => (
@@ -563,6 +560,10 @@ function ProfessionalsPage({ navigate }) {
           <div className="rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3] px-8 py-16 text-center text-sm text-[#71685f]">
             Carregando profissionais de hoje…
           </div>
+        )}
+
+        {!loading && (error || professionals.length === 0) && (
+          <div className="min-h-[180px] rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3]" aria-label="Nenhuma profissional disponível no momento" />
         )}
 
         {!loading && !error && professionals.length > 0 && (
