@@ -343,6 +343,16 @@ function PricingPage({ navigate, siteSettings, promotions }) {
     <main>
       <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." />
       <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
+        {promotions.length > 0 && (
+          <button
+            type="button"
+            onClick={() => document.getElementById('promocoes-ativas')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[.16em] text-[#b95e2d] transition hover:text-[#8f4726]"
+          >
+            Promoções ativas — confira abaixo <span aria-hidden="true">↓</span>
+          </button>
+        )}
+
         <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
           {priceRows.map((item, index) => (
             <div key={item.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
@@ -357,7 +367,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
         </div>
 
         {promotions.length > 0 && (
-          <div className="mb-12 mt-12 md:mt-14">
+          <div id="promocoes-ativas" className="mb-12 mt-12 scroll-mt-28 md:mt-14">
             <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {promotions.map((promotion) => (
@@ -563,7 +573,9 @@ function ProfessionalsPage({ navigate }) {
         )}
 
         {!loading && (error || professionals.length === 0) && (
-          <div className="min-h-[180px] rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3]" aria-label="Nenhuma profissional disponível no momento" />
+          <div className="grid min-h-[180px] place-items-center rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3] px-8 text-center">
+            <p className="font-serif text-2xl text-[#625a52]">Profissionais não disponíveis no momento</p>
+          </div>
         )}
 
         {!loading && !error && professionals.length > 0 && (
@@ -598,15 +610,15 @@ function ContactSection({ settings, showHeading = false }) {
             <div className="flex gap-4">
               <Phone className="mt-0.5 text-[#df9464]" size={19} />
               <div>
-                <p className="text-xs uppercase tracking-[.15em] text-white/45">WhatsApp</p>
-                <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noreferrer" className="mt-1 block hover:text-[#df9464]">{settings.whatsapp}</a>
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">Telefone</p>
+                <a href={telephoneHref(settings.telephone)} className="mt-1 block hover:text-[#df9464]">{settings.telephone}</a>
               </div>
             </div>
             <div className="flex gap-4">
               <Phone className="mt-0.5 text-[#df9464]" size={19} />
               <div>
-                <p className="text-xs uppercase tracking-[.15em] text-white/45">Telefone</p>
-                <a href={telephoneHref(settings.telephone)} className="mt-1 block hover:text-[#df9464]">{settings.telephone}</a>
+                <p className="text-xs uppercase tracking-[.15em] text-white/45">WhatsApp</p>
+                <a href={whatsappHref(settings.whatsapp)} target="_blank" rel="noreferrer" className="mt-1 block hover:text-[#df9464]">{settings.whatsapp}</a>
               </div>
             </div>
             <div className="flex gap-4">
