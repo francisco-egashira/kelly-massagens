@@ -341,18 +341,19 @@ function PricingPage({ navigate, siteSettings, promotions }) {
 
   return (
     <main>
-      <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." compactBottom />
-      <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
-        {promotions.length > 0 && (
+      {promotions.length > 0 && (
+        <div className="mx-auto max-w-[1240px] px-6 pt-10 md:pt-14">
           <button
             type="button"
             onClick={() => document.getElementById('promocoes-ativas')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="mb-6 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[.16em] text-[#b95e2d] transition hover:text-[#8f4726]"
+            className="inline-flex items-center gap-2 rounded-full border border-[#d9c9ba] bg-[#fffaf3] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.16em] text-[#b95e2d] transition hover:border-[#b95e2d] hover:bg-[#fff7ed] md:text-xs"
           >
             Promoções ativas — confira abaixo <span aria-hidden="true">↓</span>
           </button>
-        )}
-
+        </div>
+      )}
+      <PageIntro eyebrow="Valores" title="Sessões e valores." text="Escolha o formato que mais combina com o tempo que você deseja dedicar ao seu momento." compactBottom />
+      <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
         <div className="overflow-hidden rounded-[24px] border border-[#d5cbbf] bg-[#fffaf3]">
           {priceRows.map((item, index) => (
             <div key={item.id} className={`grid gap-5 p-7 md:grid-cols-[70px_1fr_auto] md:items-center md:p-9 ${index ? 'border-t border-[#ddd4ca]' : ''}`}>
