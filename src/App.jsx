@@ -384,13 +384,13 @@ function PricingPage({ navigate, siteSettings, promotions }) {
       <section className="mx-auto max-w-[980px] px-6 pb-24 md:pb-32">
         {promotions.length > 0 && (
           <div className="mb-12">
-            <span className="text-[10px] font-semibold uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
+            <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Promoções</span>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {promotions.map((promotion) => (
                 <article key={promotion._id} className="rounded-[22px] border border-[#d5cbbf] bg-[#fffaf3] p-7 md:p-8">
                   <h2 className="font-serif text-2xl leading-tight">{promotion.title}</h2>
                   <p className="mt-4 text-sm leading-6 text-[#71685f]">{promotion.description}</p>
-                  {promotion.price && <div className="mt-7 font-serif text-3xl text-[#b86a3a]">{promotion.price}</div>}
+                  {promotion.price && <div className="mt-7 font-serif text-[28px] text-[#b86a3a]">{promotion.price}</div>}
                 </article>
               ))}
             </div>
@@ -403,7 +403,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
               <span className="font-serif text-3xl text-[#b86a3a]">{item.id}</span>
               <div>
                 <h2 className="font-serif text-xl md:text-2xl">{item.title}</h2>
-                <p className="mt-1 text-xs text-[#7d746b]">{item.duration}</p>
+                <p className="mt-1.5 text-sm font-medium text-[#71685f] md:text-base">{item.duration}</p>
               </div>
               <div className="font-serif text-2xl md:text-3xl">{item.price}</div>
             </div>
@@ -411,7 +411,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
         </div>
 
         <div className="mt-8 rounded-[22px] border border-[#d5cbbf] bg-[#faf6ef] p-7 md:p-8">
-          <span className="text-[10px] font-semibold uppercase tracking-[.2em] text-[#b95e2d]">Formas de pagamento</span>
+          <span className="text-base font-medium uppercase tracking-[.22em] text-[#b95e2d]">Formas de pagamento</span>
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             {['Dinheiro', 'Cartão', 'PIX'].map((method) => (
               <span key={method} className="rounded-full border border-[#cfc5b9] px-4 py-2">{method}</span>
