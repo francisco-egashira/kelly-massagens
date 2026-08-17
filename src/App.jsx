@@ -575,7 +575,7 @@ function ProfessionalsPage({ navigate }) {
 
         {!loading && (error || professionals.length === 0) && (
           <div className="grid min-h-[180px] place-items-center rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3] px-8 text-center">
-            <p className="font-serif text-2xl text-[#625a52]">Profissionais não disponíveis no momento</p>
+            <p className="text-sm text-[#71685f]">Profissionais não disponíveis no momento</p>
           </div>
         )}
 
