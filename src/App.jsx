@@ -451,7 +451,7 @@ function ProfessionalCard({ professional }) {
           />
         ) : (
           <div className="grid h-full place-items-center px-8 text-center text-sm text-[#82786e]">
-            Nenhuma foto encontrada para esta profissional.
+            Fotos não disponíveis
           </div>
         )}
 
@@ -501,18 +501,44 @@ function ProfessionalsPage({ navigate }) {
     async function loadProfessionals() {
       try {
         setLoading(true);
-        const response = await fetch('/api/professionals');
-        const contentType = response.headers.get('content-type') || '';
-        const raw = await response.text();
+        let response;
+        let data;
+        let lastError;
 
-        if (!contentType.includes('application/json')) {
-          throw new Error(`A API respondeu em formato inesperado (${response.status}). Abra /api/health para testar o Vercel Function.`);
+        // A cold Vercel/Google Drive request can occasionally fail on the first
+        // attempt (more noticeable on mobile/new CDN regions). Retry transient
+        // failures automatically instead of requiring the visitor to refresh.
+        for (let attempt = 1; attempt <= 3; attempt += 1) {
+          try {
+            response = await fetch('/api/professionals');
+            const contentType = response.headers.get('content-type') || '';
+            const raw = await response.text();
+
+            if (!contentType.includes('application/json')) {
+              throw new Error(`A API respondeu em formato inesperado (${response.status}). Abra /api/health para testar o Vercel Function.`);
+            }
+
+            data = JSON.parse(raw);
+
+            if (response.ok) break;
+
+            // A missing daily list is a real empty state, not a transient error.
+            if (response.status === 404) {
+              data = { ...data, professionals: [] };
+              break;
+            }
+
+            throw new Error(data.error || 'Não foi possível carregar a lista de profissionais.');
+          } catch (err) {
+            lastError = err;
+            if (attempt < 3) {
+              await new Promise((resolve) => setTimeout(resolve, attempt * 750));
+            }
+          }
         }
 
-        const data = JSON.parse(raw);
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Não foi possível carregar a lista de profissionais.');
+        if (!response || (!response.ok && response.status !== 404)) {
+          throw lastError || new Error(data?.error || 'Não foi possível carregar a lista de profissionais.');
         }
 
         if (active) {
