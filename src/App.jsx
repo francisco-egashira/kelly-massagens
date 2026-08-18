@@ -440,24 +440,15 @@ function ProfessionalCard({ professional }) {
         <h2 className="font-serif text-2xl">{professional.name}</h2>
       </div>
 
-      <div className="group relative aspect-[4/5] overflow-hidden bg-[#e9e0d5]">
+      <div className="group relative aspect-[4/5] overflow-hidden bg-white">
         {photos.length ? (
-          <>
-            {/* Soft background fills the frame without cropping the main photo. */}
-            <img
-              src={photos[photoIndex].url}
-              alt=""
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-2xl"
-            />
-            <img
-              src={photos[photoIndex].url}
-              alt={`${professional.name} — foto ${photoIndex + 1}`}
-              loading={photoIndex === 0 ? "eager" : "lazy"}
-              decoding="async"
-              className="pointer-events-none relative z-10 h-full w-full object-contain transition duration-500"
-            />
-          </>
+          <img
+            src={photos[photoIndex].url}
+            alt={`${professional.name} — foto ${photoIndex + 1}`}
+            loading={photoIndex === 0 ? "eager" : "lazy"}
+            decoding="async"
+            className="pointer-events-none relative z-10 h-full w-full object-contain transition duration-500"
+          />
         ) : (
           <div className="grid h-full place-items-center px-8 text-center text-sm text-[#82786e]">
             Nenhuma foto encontrada para esta profissional.
