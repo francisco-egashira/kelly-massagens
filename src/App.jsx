@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   CalendarDays,
@@ -403,6 +403,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
 function ProfessionalCard({ professional }) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const photos = professional.photos || [];
+  const touchStart = useRef(null);
 
   useEffect(() => {
     setPhotoIndex(0);
@@ -434,13 +435,42 @@ function ProfessionalCard({ professional }) {
     setPhotoIndex((current) => (current + 1) % photos.length);
   };
 
+  const handleTouchStart = (event) => {
+    if (photos.length <= 1) return;
+    const touch = event.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event) => {
+    if (photos.length <= 1 || !touchStart.current) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.current.x;
+    const deltaY = touch.clientY - touchStart.current.y;
+    touchStart.current = null;
+
+    // Only treat a clear horizontal gesture as carousel navigation.
+    // Vertical gestures remain available for normal page scrolling.
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+    if (deltaX < 0) {
+      nextPhoto();
+    } else {
+      previousPhoto();
+    }
+  };
+
   return (
     <article className="overflow-hidden rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3]">
       <div className="px-7 py-5">
         <h2 className="font-serif text-2xl">{professional.name}</h2>
       </div>
 
-      <div className="group relative aspect-[4/5] overflow-hidden bg-[#fffaf3]">
+      <div
+        className="group relative aspect-[4/5] touch-pan-y overflow-hidden bg-[#fffaf3]"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {photos.length ? (
           <img
             src={photos[photoIndex].url}
