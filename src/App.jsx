@@ -562,22 +562,19 @@ function ProfessionalCard({ professional }) {
       const direction = directionSource < 0 ? 1 : -1;
       const speed = Math.abs(velocityX);
       const momentumDuration = Math.round(
-        Math.max(280, Math.min(460, 460 - speed * 170))
+        Math.max(260, Math.min(420, 420 - speed * 150))
       );
 
+      // Important: update the target slide and clear the drag offset in the
+      // SAME render. The browser then animates directly from the exact dragged
+      // position to the adjacent photo. There is no intermediate stop/reset.
+      setSlideDuration(momentumDuration);
+      setIsAnimating(true);
+      setTrackIndex((current) => current + direction);
       setDragOffset(0);
-
-      // Let the browser paint the released position with transitions enabled,
-      // then continue rolling in the same direction to the adjacent slide.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setSlideDuration(momentumDuration);
-          setIsAnimating(true);
-          setTrackIndex((current) => current + direction);
-        });
-      });
     } else {
-      setSlideDuration(320);
+      // A short drag smoothly returns from the release position to center.
+      setSlideDuration(300);
       setDragOffset(0);
     }
   };
