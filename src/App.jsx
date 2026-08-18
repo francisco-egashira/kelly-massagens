@@ -403,7 +403,9 @@ function PricingPage({ navigate, siteSettings, promotions }) {
 function ProfessionalCard({ professional }) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const photos = professional.photos || [];
-  const touchStart = useRef(null);
+  const dragStart = useRef(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     setPhotoIndex(0);
@@ -435,29 +437,59 @@ function ProfessionalCard({ professional }) {
     setPhotoIndex((current) => (current + 1) % photos.length);
   };
 
-  const handleTouchStart = (event) => {
-    if (photos.length <= 1) return;
-    const touch = event.touches[0];
-    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  const handlePointerDown = (event) => {
+    if (photos.length <= 1 || event.target.closest('button')) return;
+
+    dragStart.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId,
+    };
+    setIsDragging(true);
+    setDragOffset(0);
+
+    // Pointer capture keeps the drag active even if the pointer leaves the image.
+    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
-  const handleTouchEnd = (event) => {
-    if (photos.length <= 1 || !touchStart.current) return;
+  const handlePointerMove = (event) => {
+    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) return;
 
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - touchStart.current.x;
-    const deltaY = touch.clientY - touchStart.current.y;
-    touchStart.current = null;
+    const deltaX = event.clientX - dragStart.current.x;
+    const deltaY = event.clientY - dragStart.current.y;
 
-    // Only treat a clear horizontal gesture as carousel navigation.
-    // Vertical gestures remain available for normal page scrolling.
-    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+    // Only move the photo when the gesture is predominantly horizontal.
+    // This keeps normal vertical page scrolling intact on phones.
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      setDragOffset(deltaX);
+    }
+  };
+
+  const finishDrag = (event) => {
+    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - dragStart.current.x;
+    const deltaY = event.clientY - dragStart.current.y;
+    const frameWidth = event.currentTarget.getBoundingClientRect().width;
+    const threshold = Math.min(90, Math.max(45, frameWidth * 0.14));
+
+    dragStart.current = null;
+    setIsDragging(false);
+    setDragOffset(0);
+
+    if (Math.abs(deltaX) < threshold || Math.abs(deltaX) <= Math.abs(deltaY)) return;
 
     if (deltaX < 0) {
       nextPhoto();
     } else {
       previousPhoto();
     }
+  };
+
+  const cancelDrag = () => {
+    dragStart.current = null;
+    setIsDragging(false);
+    setDragOffset(0);
   };
 
   return (
@@ -467,9 +499,13 @@ function ProfessionalCard({ professional }) {
       </div>
 
       <div
-        className="group relative aspect-[4/5] touch-pan-y overflow-hidden bg-[#fffaf3]"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        className={`group relative aspect-[4/5] touch-pan-y select-none overflow-hidden bg-[#fffaf3] ${
+          photos.length > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : ''
+        }`}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={cancelDrag}
       >
         {photos.length ? (
           <img
@@ -477,7 +513,14 @@ function ProfessionalCard({ professional }) {
             alt={`${professional.name} — foto ${photoIndex + 1}`}
             loading={photoIndex === 0 ? "eager" : "lazy"}
             decoding="async"
-            className="pointer-events-none relative z-10 h-full w-full object-contain transition duration-500"
+            draggable="false"
+            className={`pointer-events-none relative z-10 h-full w-full object-contain ${
+              isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'
+            }`}
+            style={{
+              transform: `translateX(${dragOffset}px)`,
+              opacity: isDragging ? Math.max(0.72, 1 - Math.abs(dragOffset) / 700) : 1,
+            }}
           />
         ) : (
           <div className="grid h-full place-items-center px-8 text-center text-sm text-[#82786e]">
@@ -604,7 +647,7 @@ function ProfessionalsPage({ navigate }) {
       <PageIntro
         eyebrow="Profissionais"
         title="Quem atende hoje."
-        text="A equipe abaixo é atualizada automaticamente a partir da lista diária. Use as setas de cada perfil para navegar pelas fotos disponíveis."
+        text="A equipe abaixo é atualizada automaticamente a partir da lista diária. Use as setas ou arraste as fotos para navegar."
       />
 
       <section className="mx-auto max-w-[1240px] px-6 pb-24 md:pb-32">
