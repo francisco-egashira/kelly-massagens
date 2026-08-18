@@ -489,10 +489,15 @@ function ProfessionalCard({ professional }) {
       return;
     }
 
+    const now = performance.now();
+
     dragStart.current = {
       x: event.clientX,
       y: event.clientY,
       pointerId: event.pointerId,
+      lastX: event.clientX,
+      lastTime: now,
+      velocityX: 0,
     };
 
     setIsDragging(true);
@@ -511,6 +516,17 @@ function ProfessionalCard({ professional }) {
     // Only follow a predominantly horizontal gesture.
     // Vertical motion remains available for normal page scrolling.
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      const now = performance.now();
+      const elapsed = Math.max(1, now - dragStart.current.lastTime);
+      const instantVelocity = (event.clientX - dragStart.current.lastX) / elapsed;
+
+      // Smooth the velocity a little so a short, quick flick feels natural
+      // without becoming too sensitive to a single noisy pointer event.
+      dragStart.current.velocityX =
+        dragStart.current.velocityX * 0.55 + instantVelocity * 0.45;
+      dragStart.current.lastX = event.clientX;
+      dragStart.current.lastTime = now;
+
       setDragOffset(deltaX);
     }
   };
@@ -520,13 +536,23 @@ function ProfessionalCard({ professional }) {
       return;
     }
 
-    const deltaX = event.clientX - dragStart.current.x;
-    const deltaY = event.clientY - dragStart.current.y;
+    const state = dragStart.current;
+    const deltaX = event.clientX - state.x;
+    const deltaY = event.clientY - state.y;
     const frameWidth = event.currentTarget.getBoundingClientRect().width;
 
-    // A fairly light threshold makes the carousel feel natural on both
-    // desktop and mobile instead of requiring an exaggerated drag.
-    const threshold = Math.min(70, Math.max(32, frameWidth * 0.1));
+    // Two ways to advance:
+    // 1) a deliberate drag that covers some distance, or
+    // 2) a short but quick "flick" whose velocity gives the carousel momentum.
+    const distanceThreshold = Math.min(62, Math.max(28, frameWidth * 0.085));
+    const flickVelocityThreshold = 0.22; // px/ms
+    const minimumFlickDistance = 10;
+
+    // Include the final pointer-up movement in the velocity estimate.
+    const now = performance.now();
+    const finalElapsed = Math.max(1, now - state.lastTime);
+    const finalVelocity = (event.clientX - state.lastX) / finalElapsed;
+    const velocityX = state.velocityX * 0.65 + finalVelocity * 0.35;
 
     const pointerId = event.pointerId;
     const frame = event.currentTarget;
@@ -541,9 +567,16 @@ function ProfessionalCard({ professional }) {
     }
 
     const horizontalGesture = Math.abs(deltaX) > Math.abs(deltaY);
+    const enoughDistance = Math.abs(deltaX) >= distanceThreshold;
+    const enoughImpulse =
+      Math.abs(deltaX) >= minimumFlickDistance &&
+      Math.abs(velocityX) >= flickVelocityThreshold;
 
-    if (horizontalGesture && Math.abs(deltaX) >= threshold) {
-      const direction = deltaX < 0 ? 1 : -1;
+    if (horizontalGesture && (enoughDistance || enoughImpulse)) {
+      // For a fast flick, velocity determines direction. For a slower drag,
+      // the actual displacement determines direction.
+      const directionSource = enoughImpulse ? velocityX : deltaX;
+      const direction = directionSource < 0 ? 1 : -1;
 
       // First render the track at the exact point where the user released it,
       // with transitions enabled. On the following frame move it to the final
@@ -613,7 +646,7 @@ function ProfessionalCard({ professional }) {
             className={`absolute inset-0 flex h-full w-full ${
               isDragging || isRecentering
                 ? 'transition-none'
-                : 'transition-transform duration-300 ease-out'
+                : 'transition-transform duration-200 ease-out'
             }`}
             style={{ transform: trackTransform }}
             onTransitionEnd={(event) => {
@@ -774,7 +807,7 @@ function ProfessionalsPage({ navigate }) {
       <PageIntro
         eyebrow="Profissionais"
         title="Quem atende hoje."
-        text="A equipe abaixo é atualizada automaticamente a partir da lista diária. Use as setas ou arraste as fotos para navegar."
+        text="A equipe abaixo é atualizada automaticamente a partir da lista diária. Use as setas ou deslize as fotos para navegar."
       />
 
       <section className="mx-auto max-w-[1240px] px-6 pb-24 md:pb-32">
