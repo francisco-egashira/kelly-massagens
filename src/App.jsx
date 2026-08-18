@@ -506,21 +506,42 @@ function ProfessionalCard({ professional }) {
     const deltaX = event.clientX - dragStart.current.x;
     const deltaY = event.clientY - dragStart.current.y;
     const frameWidth = event.currentTarget.getBoundingClientRect().width;
-    const threshold = Math.min(90, Math.max(45, frameWidth * 0.14));
+
+    // A fairly light threshold makes the carousel feel natural on both
+    // desktop and mobile instead of requiring an exaggerated drag.
+    const threshold = Math.min(70, Math.max(32, frameWidth * 0.1));
+
+    const pointerId = event.pointerId;
+    const frame = event.currentTarget;
 
     dragStart.current = null;
     setIsDragging(false);
 
-    if (
-      Math.abs(deltaX) >= threshold &&
-      Math.abs(deltaX) > Math.abs(deltaY)
-    ) {
-      // Keep the current drag position, then animate the track the rest
-      // of the way so the adjacent photo visibly replaces the current one.
-      setSettleDirection(deltaX < 0 ? 1 : -1);
+    // Explicitly release pointer capture so the browser never remains in a
+    // "mouse still pressed" state after the user releases the button/finger.
+    if (frame.hasPointerCapture?.(pointerId)) {
+      frame.releasePointerCapture(pointerId);
+    }
+
+    const horizontalGesture = Math.abs(deltaX) > Math.abs(deltaY);
+
+    if (horizontalGesture && Math.abs(deltaX) >= threshold) {
+      const direction = deltaX < 0 ? 1 : -1;
+
+      // First render the track at the exact point where the user released it,
+      // with transitions enabled. On the following frame move it to the final
+      // slide. This guarantees that the adjacent photo continues moving in
+      // instead of snapping back to the current photo.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setSettleDirection(direction);
+        });
+      });
     } else {
-      // Snap the track back to the current photo.
-      setDragOffset(0);
+      // If the drag was too short, smoothly return to the current photo.
+      requestAnimationFrame(() => {
+        setDragOffset(0);
+      });
     }
   };
 
@@ -528,6 +549,14 @@ function ProfessionalCard({ professional }) {
     dragStart.current = null;
     setIsDragging(false);
     setDragOffset(0);
+  };
+
+  const handleLostPointerCapture = () => {
+    // If capture is lost unexpectedly while a drag is still active, clean up.
+    // Normal pointer-up sets dragStart to null before releasing capture.
+    if (dragStart.current) {
+      cancelDrag();
+    }
   };
 
   const trackTransform = (() => {
@@ -560,6 +589,7 @@ function ProfessionalCard({ professional }) {
         onPointerMove={handlePointerMove}
         onPointerUp={finishDrag}
         onPointerCancel={cancelDrag}
+        onLostPointerCapture={handleLostPointerCapture}
       >
         {photos.length ? (
           <div
@@ -567,7 +597,11 @@ function ProfessionalCard({ professional }) {
               isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'
             }`}
             style={{ transform: trackTransform }}
-            onTransitionEnd={finishSlide}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget && event.propertyName === 'transform') {
+                finishSlide();
+              }
+            }}
           >
             <img
               src={photos[previousIndex].url}
