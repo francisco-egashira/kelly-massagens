@@ -440,7 +440,7 @@ function ProfessionalCard({ professional }) {
         <h2 className="font-serif text-2xl">{professional.name}</h2>
       </div>
 
-      <div className="group relative aspect-[4/5] overflow-hidden bg-white">
+      <div className="group relative aspect-[4/5] overflow-hidden bg-[#fffaf3]">
         {photos.length ? (
           <img
             src={photos[photoIndex].url}
