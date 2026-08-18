@@ -408,6 +408,7 @@ function ProfessionalCard({ professional }) {
   const [isDragging, setIsDragging] = useState(false);
   const [settleDirection, setSettleDirection] = useState(0);
   const [isRecentering, setIsRecentering] = useState(false);
+  const [slideDuration, setSlideDuration] = useState(420);
 
   useEffect(() => {
     setPhotoIndex(0);
@@ -415,6 +416,7 @@ function ProfessionalCard({ professional }) {
     setIsDragging(false);
     setSettleDirection(0);
     setIsRecentering(false);
+    setSlideDuration(420);
   }, [professional.name]);
 
   // Keep the adjacent photos warm in the browser cache.
@@ -444,6 +446,7 @@ function ProfessionalCard({ professional }) {
     if (photos.length <= 1 || settleDirection) return;
     setDragOffset(0);
     setIsDragging(false);
+    setSlideDuration(420);
     setSettleDirection(direction);
   };
 
@@ -578,17 +581,23 @@ function ProfessionalCard({ professional }) {
       const directionSource = enoughImpulse ? velocityX : deltaX;
       const direction = directionSource < 0 ? 1 : -1;
 
-      // First render the track at the exact point where the user released it,
-      // with transitions enabled. On the following frame move it to the final
-      // slide. This guarantees that the adjacent photo continues moving in
-      // instead of snapping back to the current photo.
+      // Faster flicks keep their momentum, while slower drags ease into the
+      // next photo. This creates a longer, continuous "rolling" slide rather
+      // than an abrupt snap.
+      const speed = Math.abs(velocityX);
+      const momentumDuration = Math.round(
+        Math.max(280, Math.min(460, 460 - speed * 170))
+      );
+      setSlideDuration(momentumDuration);
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setSettleDirection(direction);
         });
       });
     } else {
-      // If the drag was too short, smoothly return to the current photo.
+      // A short drag rolls gently back to the current photo.
+      setSlideDuration(320);
       requestAnimationFrame(() => {
         setDragOffset(0);
       });
@@ -643,12 +652,15 @@ function ProfessionalCard({ professional }) {
       >
         {photos.length ? (
           <div
-            className={`absolute inset-0 flex h-full w-full ${
-              isDragging || isRecentering
-                ? 'transition-none'
-                : 'transition-transform duration-200 ease-out'
-            }`}
-            style={{ transform: trackTransform }}
+            className="absolute inset-0 flex h-full w-full"
+            style={{
+              transform: trackTransform,
+              transition:
+                isDragging || isRecentering
+                  ? 'none'
+                  : `transform ${slideDuration}ms cubic-bezier(0.22, 0.61, 0.36, 1)`,
+              willChange: 'transform',
+            }}
             onTransitionEnd={(event) => {
               if (event.target === event.currentTarget && event.propertyName === 'transform') {
                 finishSlide();
