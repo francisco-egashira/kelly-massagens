@@ -407,12 +407,14 @@ function ProfessionalCard({ professional }) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [settleDirection, setSettleDirection] = useState(0);
+  const [isRecentering, setIsRecentering] = useState(false);
 
   useEffect(() => {
     setPhotoIndex(0);
     setDragOffset(0);
     setIsDragging(false);
     setSettleDirection(0);
+    setIsRecentering(false);
   }, [professional.name]);
 
   // Keep the adjacent photos warm in the browser cache.
@@ -451,16 +453,31 @@ function ProfessionalCard({ professional }) {
   const finishSlide = () => {
     if (!settleDirection) return;
 
+    const completedDirection = settleDirection;
+
+    // The outgoing animation has finished. Now update which image is the
+    // current one and instantly recenter the 3-slide track WITHOUT animation.
+    // Without this temporary transition lock, the browser animates the reset
+    // from -200% back to -100%, which looks like the new photo is entering
+    // from the wrong direction.
+    setIsRecentering(true);
+
     setPhotoIndex((current) => {
-      if (settleDirection > 0) {
+      if (completedDirection > 0) {
         return (current + 1) % photos.length;
       }
       return (current - 1 + photos.length) % photos.length;
     });
 
-    // Reset the three-slide track to the center without an animation.
     setSettleDirection(0);
     setDragOffset(0);
+
+    // Re-enable transitions only after the centered position has been painted.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsRecentering(false);
+      });
+    });
   };
 
   const handlePointerDown = (event) => {
@@ -594,7 +611,9 @@ function ProfessionalCard({ professional }) {
         {photos.length ? (
           <div
             className={`absolute inset-0 flex h-full w-full ${
-              isDragging ? 'transition-none' : 'transition-transform duration-300 ease-out'
+              isDragging || isRecentering
+                ? 'transition-none'
+                : 'transition-transform duration-300 ease-out'
             }`}
             style={{ transform: trackTransform }}
             onTransitionEnd={(event) => {
