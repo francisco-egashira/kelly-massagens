@@ -401,92 +401,88 @@ function PricingPage({ navigate, siteSettings, promotions }) {
 }
 
 function ProfessionalCard({ professional }) {
-  const [photoIndex, setPhotoIndex] = useState(0);
   const photos = professional.photos || [];
   const dragStart = useRef(null);
+  const [trackIndex, setTrackIndex] = useState(photos.length ? 1 : 0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [settleDirection, setSettleDirection] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [isRecentering, setIsRecentering] = useState(false);
   const [slideDuration, setSlideDuration] = useState(420);
 
+  const currentPhotoIndex = photos.length
+    ? (trackIndex - 1 + photos.length) % photos.length
+    : 0;
+
   useEffect(() => {
-    setPhotoIndex(0);
+    setTrackIndex(photos.length ? 1 : 0);
     setDragOffset(0);
     setIsDragging(false);
-    setSettleDirection(0);
+    setIsAnimating(false);
     setIsRecentering(false);
     setSlideDuration(420);
-  }, [professional.name]);
+  }, [professional.name, photos.length]);
 
-  // Keep the adjacent photos warm in the browser cache.
+  // Warm all images for this professional. The galleries are small, and this
+  // prevents a first-visit decode flash when a photo reaches the viewport.
   useEffect(() => {
-    if (photos.length <= 1) return;
-
-    const indexes = new Set([
-      (photoIndex + 1) % photos.length,
-      (photoIndex - 1 + photos.length) % photos.length,
-    ]);
-
-    indexes.forEach((index) => {
+    photos.forEach((photo) => {
       const image = new Image();
-      image.src = photos[index].url;
+      image.src = photo.url;
     });
-  }, [photoIndex, photos]);
+  }, [photos]);
 
-  const previousIndex = photos.length
-    ? (photoIndex - 1 + photos.length) % photos.length
-    : 0;
+  const slides = photos.length > 1
+    ? [photos[photos.length - 1], ...photos, photos[0]]
+    : photos;
 
-  const nextIndex = photos.length
-    ? (photoIndex + 1) % photos.length
-    : 0;
-
-  const startSlide = (direction) => {
-    if (photos.length <= 1 || settleDirection) return;
-    setDragOffset(0);
-    setIsDragging(false);
-    setSlideDuration(420);
-    setSettleDirection(direction);
+  const moveToTrackIndex = (nextTrackIndex, duration = 420) => {
+    if (photos.length <= 1 || isAnimating) return;
+    setSlideDuration(duration);
+    setIsAnimating(true);
+    setTrackIndex(nextTrackIndex);
   };
 
-  const previousPhoto = () => startSlide(-1);
-  const nextPhoto = () => startSlide(1);
+  const previousPhoto = () => {
+    moveToTrackIndex(trackIndex - 1, 420);
+  };
 
-  const finishSlide = () => {
-    if (!settleDirection) return;
+  const nextPhoto = () => {
+    moveToTrackIndex(trackIndex + 1, 420);
+  };
 
-    const completedDirection = settleDirection;
+  const handleTransitionEnd = (event) => {
+    if (
+      event.target !== event.currentTarget ||
+      event.propertyName !== 'transform' ||
+      !isAnimating
+    ) {
+      return;
+    }
 
-    // The outgoing animation has finished. Now update which image is the
-    // current one and instantly recenter the 3-slide track WITHOUT animation.
-    // Without this temporary transition lock, the browser animates the reset
-    // from -200% back to -100%, which looks like the new photo is entering
-    // from the wrong direction.
-    setIsRecentering(true);
+    setIsAnimating(false);
 
-    setPhotoIndex((current) => {
-      if (completedDirection > 0) {
-        return (current + 1) % photos.length;
-      }
-      return (current - 1 + photos.length) % photos.length;
-    });
-
-    setSettleDirection(0);
-    setDragOffset(0);
-
-    // Re-enable transitions only after the centered position has been painted.
-    requestAnimationFrame(() => {
+    // Only the wrap-around clones need an invisible recenter.
+    // Normal slides never swap DOM image positions, so there is no reload flash.
+    if (trackIndex === 0) {
+      setIsRecentering(true);
+      setTrackIndex(photos.length);
       requestAnimationFrame(() => {
-        setIsRecentering(false);
+        requestAnimationFrame(() => setIsRecentering(false));
       });
-    });
+    } else if (trackIndex === photos.length + 1) {
+      setIsRecentering(true);
+      setTrackIndex(1);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setIsRecentering(false));
+      });
+    }
   };
 
   const handlePointerDown = (event) => {
     if (
       photos.length <= 1 ||
-      settleDirection ||
+      isAnimating ||
       event.target.closest('button')
     ) {
       return;
@@ -509,62 +505,48 @@ function ProfessionalCard({ professional }) {
   };
 
   const handlePointerMove = (event) => {
-    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) {
-      return;
-    }
+    const state = dragStart.current;
+    if (!state || state.pointerId !== event.pointerId) return;
 
-    const deltaX = event.clientX - dragStart.current.x;
-    const deltaY = event.clientY - dragStart.current.y;
+    const deltaX = event.clientX - state.x;
+    const deltaY = event.clientY - state.y;
 
-    // Only follow a predominantly horizontal gesture.
-    // Vertical motion remains available for normal page scrolling.
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       const now = performance.now();
-      const elapsed = Math.max(1, now - dragStart.current.lastTime);
-      const instantVelocity = (event.clientX - dragStart.current.lastX) / elapsed;
+      const elapsed = Math.max(1, now - state.lastTime);
+      const instantVelocity = (event.clientX - state.lastX) / elapsed;
 
-      // Smooth the velocity a little so a short, quick flick feels natural
-      // without becoming too sensitive to a single noisy pointer event.
-      dragStart.current.velocityX =
-        dragStart.current.velocityX * 0.55 + instantVelocity * 0.45;
-      dragStart.current.lastX = event.clientX;
-      dragStart.current.lastTime = now;
+      state.velocityX = state.velocityX * 0.55 + instantVelocity * 0.45;
+      state.lastX = event.clientX;
+      state.lastTime = now;
 
       setDragOffset(deltaX);
     }
   };
 
   const finishDrag = (event) => {
-    if (!dragStart.current || dragStart.current.pointerId !== event.pointerId) {
-      return;
-    }
-
     const state = dragStart.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+
     const deltaX = event.clientX - state.x;
     const deltaY = event.clientY - state.y;
     const frameWidth = event.currentTarget.getBoundingClientRect().width;
 
-    // Two ways to advance:
-    // 1) a deliberate drag that covers some distance, or
-    // 2) a short but quick "flick" whose velocity gives the carousel momentum.
     const distanceThreshold = Math.min(62, Math.max(28, frameWidth * 0.085));
-    const flickVelocityThreshold = 0.22; // px/ms
+    const flickVelocityThreshold = 0.22;
     const minimumFlickDistance = 10;
 
-    // Include the final pointer-up movement in the velocity estimate.
     const now = performance.now();
     const finalElapsed = Math.max(1, now - state.lastTime);
     const finalVelocity = (event.clientX - state.lastX) / finalElapsed;
     const velocityX = state.velocityX * 0.65 + finalVelocity * 0.35;
 
-    const pointerId = event.pointerId;
     const frame = event.currentTarget;
+    const pointerId = event.pointerId;
 
     dragStart.current = null;
     setIsDragging(false);
 
-    // Explicitly release pointer capture so the browser never remains in a
-    // "mouse still pressed" state after the user releases the button/finger.
     if (frame.hasPointerCapture?.(pointerId)) {
       frame.releasePointerCapture(pointerId);
     }
@@ -576,31 +558,27 @@ function ProfessionalCard({ professional }) {
       Math.abs(velocityX) >= flickVelocityThreshold;
 
     if (horizontalGesture && (enoughDistance || enoughImpulse)) {
-      // For a fast flick, velocity determines direction. For a slower drag,
-      // the actual displacement determines direction.
       const directionSource = enoughImpulse ? velocityX : deltaX;
       const direction = directionSource < 0 ? 1 : -1;
-
-      // Faster flicks keep their momentum, while slower drags ease into the
-      // next photo. This creates a longer, continuous "rolling" slide rather
-      // than an abrupt snap.
       const speed = Math.abs(velocityX);
       const momentumDuration = Math.round(
         Math.max(280, Math.min(460, 460 - speed * 170))
       );
-      setSlideDuration(momentumDuration);
 
+      setDragOffset(0);
+
+      // Let the browser paint the released position with transitions enabled,
+      // then continue rolling in the same direction to the adjacent slide.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setSettleDirection(direction);
+          setSlideDuration(momentumDuration);
+          setIsAnimating(true);
+          setTrackIndex((current) => current + direction);
         });
       });
     } else {
-      // A short drag rolls gently back to the current photo.
       setSlideDuration(320);
-      requestAnimationFrame(() => {
-        setDragOffset(0);
-      });
+      setDragOffset(0);
     }
   };
 
@@ -611,24 +589,15 @@ function ProfessionalCard({ professional }) {
   };
 
   const handleLostPointerCapture = () => {
-    // If capture is lost unexpectedly while a drag is still active, clean up.
-    // Normal pointer-up sets dragStart to null before releasing capture.
-    if (dragStart.current) {
-      cancelDrag();
-    }
+    if (dragStart.current) cancelDrag();
   };
 
-  const trackTransform = (() => {
-    if (settleDirection > 0) return 'translate3d(-200%, 0, 0)';
-    if (settleDirection < 0) return 'translate3d(0%, 0, 0)';
-    if (isDragging || dragOffset !== 0) {
-      return `translate3d(calc(-100% + ${dragOffset}px), 0, 0)`;
-    }
-    return 'translate3d(-100%, 0, 0)';
-  })();
+  const slideWidthPercent = slides.length ? 100 / slides.length : 100;
+  const trackWidthPercent = slides.length * 100;
 
-  const slideClassName =
-    "pointer-events-none h-full w-full shrink-0 object-contain";
+  const trackTransform = isDragging || dragOffset !== 0
+    ? `translate3d(calc(-${trackIndex * slideWidthPercent}% + ${dragOffset}px), 0, 0)`
+    : `translate3d(-${trackIndex * slideWidthPercent}%, 0, 0)`;
 
   return (
     <article className="overflow-hidden rounded-[22px] border border-[#d8cfc4] bg-[#fffaf3]">
@@ -652,8 +621,9 @@ function ProfessionalCard({ professional }) {
       >
         {photos.length ? (
           <div
-            className="absolute inset-0 flex h-full w-full"
+            className="absolute inset-y-0 left-0 flex h-full"
             style={{
+              width: `${trackWidthPercent}%`,
               transform: trackTransform,
               transition:
                 isDragging || isRecentering
@@ -661,36 +631,23 @@ function ProfessionalCard({ professional }) {
                   : `transform ${slideDuration}ms cubic-bezier(0.22, 0.61, 0.36, 1)`,
               willChange: 'transform',
             }}
-            onTransitionEnd={(event) => {
-              if (event.target === event.currentTarget && event.propertyName === 'transform') {
-                finishSlide();
-              }
-            }}
+            onTransitionEnd={handleTransitionEnd}
           >
-            <img
-              src={photos[previousIndex].url}
-              alt={`${professional.name} — foto ${previousIndex + 1}`}
-              draggable="false"
-              decoding="async"
-              className={slideClassName}
-            />
-
-            <img
-              src={photos[photoIndex].url}
-              alt={`${professional.name} — foto ${photoIndex + 1}`}
-              loading={photoIndex === 0 ? "eager" : "lazy"}
-              draggable="false"
-              decoding="async"
-              className={slideClassName}
-            />
-
-            <img
-              src={photos[nextIndex].url}
-              alt={`${professional.name} — foto ${nextIndex + 1}`}
-              draggable="false"
-              decoding="async"
-              className={slideClassName}
-            />
+            {slides.map((photo, slideIndex) => (
+              <div
+                key={`${photo.id || photo.url}-${slideIndex}`}
+                className="h-full shrink-0 bg-[#fffaf3]"
+                style={{ width: `${slideWidthPercent}%` }}
+              >
+                <img
+                  src={photo.url}
+                  alt={`${professional.name} — foto`}
+                  draggable="false"
+                  decoding="async"
+                  className="pointer-events-none h-full w-full object-contain"
+                />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid h-full place-items-center px-8 text-center text-sm text-[#82786e]">
@@ -719,7 +676,7 @@ function ProfessionalCard({ professional }) {
             </button>
 
             <div className="pointer-events-none absolute bottom-4 right-4 z-30 rounded-full bg-black/50 px-3 py-1.5 text-[10px] font-medium text-white backdrop-blur">
-              {photoIndex + 1} / {photos.length}
+              {currentPhotoIndex + 1} / {photos.length}
             </div>
           </>
         )}
