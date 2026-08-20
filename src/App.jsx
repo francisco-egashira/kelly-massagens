@@ -403,7 +403,7 @@ function PricingPage({ navigate, siteSettings, promotions }) {
 function ProfessionalCard({ professional }) {
   const photos = professional.photos || [];
   const dragStart = useRef(null);
-  const [trackIndex, setTrackIndex] = useState(photos.length ? 1 : 0);
+  const [trackIndex, setTrackIndex] = useState(photos.length > 1 ? 1 : 0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -415,7 +415,7 @@ function ProfessionalCard({ professional }) {
     : 0;
 
   useEffect(() => {
-    setTrackIndex(photos.length ? 1 : 0);
+    setTrackIndex(photos.length > 1 ? 1 : 0);
     setDragOffset(0);
     setIsDragging(false);
     setIsAnimating(false);
